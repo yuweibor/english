@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="screen-orientation" content="landscape">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>单词挑战</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* 横屏锁定提示 */
+    .rotate-hint {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--bg-dark);
+      z-index: 9999;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 18px;
+    }
+    .rotate-hint-icon {
+      font-size: 60px;
+      margin-bottom: 16px;
+      animation: rotatePhone 2s ease infinite;
+    }
+    @keyframes rotatePhone {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(90deg); }
+    }
+    @media (orientation: portrait) and (max-width: 768px) {
+      .rotate-hint { display: flex; }
+    }
+  </style>
+</head>
+<body>
+  <!-- 横屏提示 -->
+  <div class="rotate-hint" id="rotateHint">
+    <div class="rotate-hint-icon">📱</div>
+    <div>请将手机横屏放置</div>
+  </div>
+
+  <div id="app">
+    <!-- ====== 设置页面 ====== -->
+    <div class="page active" id="settingsPage">
+      <div class="settings-page">
+        <h1 class="settings-title">🃏 单词挑战</h1>
+
+        <!-- 一级菜单: 类别 -->
+        <div class="menu-section">
+          <div class="menu-section-title">📚 选择类别</div>
+          <div class="category-grid" id="categoryGrid"></div>
+        </div>
+
+        <!-- 二级菜单: 词性 -->
+        <div class="menu-section" id="posSection" style="display:none;">
+          <div class="menu-section-title">📝 选择词性</div>
+          <div class="pos-grid" id="posGrid"></div>
+        </div>
+
+        <!-- 三级菜单: 级别 -->
+        <div class="menu-section" id="levelSection" style="display:none;">
+          <div class="menu-section-title">⭐ 选择级别</div>
+          <div class="level-grid" id="levelGrid"></div>
+        </div>
+
+        <!-- 词数统计 -->
+        <div class="word-count-display" id="wordCountDisplay" style="display:none;">
+          已选择 <strong id="wordCountNum">0</strong> 个单词
+        </div>
+
+        <!-- 时间/数量设置 -->
+        <div class="menu-section">
+          <div class="setting-row">
+            <span class="setting-label">⏱ 模式</span>
+            <div class="setting-options" id="timeModeOptions">
+              <button class="time-btn active" data-mode="time" data-value="7">7分钟</button>
+              <button class="time-btn" data-mode="time" data-value="5">5分钟</button>
+              <button class="time-btn" data-mode="time" data-value="3">3分钟</button>
+              <button class="time-btn" data-mode="count" data-value="10">10词</button>
+              <button class="time-btn" data-mode="count" data-value="20">20词</button>
+              <button class="time-btn" data-mode="count" data-value="30">30词</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 优先选项 -->
+        <div class="menu-section">
+          <div class="checkbox-row" id="preferNew">
+            <div class="checkbox"></div>
+            <span class="checkbox-label">🔄 优先生词</span>
+          </div>
+          <div class="checkbox-row" id="preferWrong">
+            <div class="checkbox"></div>
+            <span class="checkbox-label">❌ 优先错词</span>
+          </div>
+        </div>
+
+        <!-- 开始按钮 -->
+        <button class="start-btn" id="startBtn" disabled>开始挑战</button>
+      </div>
+    </div>
+
+    <!-- ====== 倒计时页面 ====== -->
+    <div class="page" id="countdownPage">
+      <div class="countdown-page">
+        <div class="countdown-number" id="countdownNumber">3</div>
+        <div class="countdown-text" id="countdownText">准备好了吗？</div>
+      </div>
+    </div>
+
+    <!-- ====== 游戏页面 ====== -->
+    <div class="page game-page" id="gamePage">
+      <!-- 顶部信息 -->
+      <div class="game-header">
+        <div class="game-timer" id="gameTimer">7:00</div>
+        <div class="game-progress" id="gameProgress">1 / 50</div>
+        <div class="game-score">✅ <span id="gameCorrect">0</span> &nbsp;❌ <span id="gameWrong">0</span></div>
+      </div>
+
+      <!-- 卡片区域 -->
+      <div class="card-container" id="cardContainer">
+        <div class="word-card" id="wordCard">
+          <!-- 中文 + 拼音面（猜词者看） -->
+          <div class="word-cn-group" id="wordCnGroup">
+            <div class="word-cn" id="wordCn">你好</div>
+            <div class="word-py" id="wordPy">nǐ hǎo</div>
+          </div>
+          <!-- 英文面（答对/答错后短暂显示） -->
+          <div class="word-en-group" id="wordEnGroup" style="display:none;">
+            <div class="word-en" id="wordEn">hello</div>
+            <div class="word-ipa" id="wordIpa">/həˈləʊ/</div>
+            <div class="word-pos" id="WordPos">int.</div>
+          </div>
+        </div>
+        <div class="hint-correct" id="hintCorrect">✅ +1</div>
+        <div class="hint-wrong" id="hintWrong">❌ +1</div>
+      </div>
+
+      <!-- 30秒警告 -->
+      <div class="time-warning" id="timeWarning" style="display:none;">⏰ 还剩30秒！</div>
+
+      <!-- 暂停/退出覆盖层 -->
+      <div class="overlay" id="pauseOverlay">
+        <div class="overlay-title">⏸ 游戏暂停</div>
+        <button class="overlay-btn resume" id="resumeBtn">▶ 继续游戏</button>
+        <button class="overlay-btn restart" id="restartBtn">🔄 重新开始</button>
+        <button class="overlay-btn quit" id="quitBtn">🏠 返回首页</button>
+      </div>
+    </div>
+
+    <!-- ====== 结算页面 ====== -->
+    <div class="page" id="resultPage">
+      <div class="result-page">
+        <div class="result-card">
+          <div class="result-title">🏆 挑战结束</div>
+          <div class="result-stats">
+            <div class="stat-item">
+              <div class="stat-value correct" id="resultCorrect">0</div>
+              <div class="stat-label">答对</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value wrong" id="resultWrong">0</div>
+              <div class="stat-label">跳过</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value total" id="resultTotal">0</div>
+              <div class="stat-label">总词数</div>
+            </div>
+          </div>
+          <div class="result-message" id="resultMessage"></div>
+          <div class="result-word-list" id="resultWordList"></div>
+          <div class="result-buttons">
+            <button class="result-btn restart" id="resultRestartBtn">🔄 重新开始</button>
+            <button class="result-btn reselect" id="resultReselectBtn">📚 重选词库</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/words.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

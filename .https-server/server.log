@@ -1,0 +1,21 @@
+HTTPS serving /Users/mac/projects on https://0.0.0.0:8443
+[16/Sep/2026 10:47:26] "GET /index.html HTTP/1.1" 200 -
+[16/Sep/2026 10:50:42] "GET / HTTP/1.1" 200 -
+[16/Sep/2026 10:50:42] "GET /css/style.css HTTP/1.1" 200 -
+[16/Sep/2026 10:50:42] "GET /js/app.js HTTP/1.1" 200 -
+[16/Sep/2026 10:50:42] "GET /js/words.js HTTP/1.1" 200 -
+[16/Sep/2026 10:50:43] code 404, message File not found
+[16/Sep/2026 10:50:43] "GET /favicon.ico HTTP/1.1" 404 -
+[16/Sep/2026 10:50:43] code 404, message File not found
+[16/Sep/2026 10:50:43] "GET /favicon.ico HTTP/1.1" 404 -
+[16/Sep/2026 10:51:05] "GET / HTTP/1.1" 200 -
+[16/Sep/2026 10:51:05] "GET /css/style.css HTTP/1.1" 200 -
+[16/Sep/2026 10:51:05] "GET /js/words.js HTTP/1.1" 200 -
+[16/Sep/2026 10:51:05] "GET /js/app.js HTTP/1.1" 200 -
+[16/Sep/2026 10:51:05] code 404, message File not found
+[16/Sep/2026 10:51:05] "GET /favicon.ico HTTP/1.1" 404 -
+[16/Sep/2026 11:30:23] "GET / HTTP/1.1" 200 -
+[16/Sep/2026 11:33:04] "GET / HTTP/1.1" 200 -
+[16/Sep/2026 11:34:15] code 404, message File not found
+[16/Sep/2026 11:34:15] "GET /test%C2%B7html HTTP/1.1" 404 -
+[16/Sep/2026 11:34:25] "GET /test.html HTTP/1.1" 200 -

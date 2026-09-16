@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
+<title>重力&倾角传感器测试</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui;padding:16px;background:#111;color:#fff;font-size:16px;line-height:1.6}
+#box{background:#222;padding:16px;border-radius:12px;max-width:420px;margin:0 auto}
+.title{font-size:20px;margin-bottom:12px;color:#4cf}
+.item{margin:6px 0}
+.val{color:#ffd700}
+#tip{color:#f66;margin-top:10px}
+button{padding:10px 16px;font-size:16px;border:none;border-radius:8px;background:#4cf;color:#000;margin-bottom:12px}
+</style>
+</head>
+<body>
+<div id="box">
+  <div class="title">📱 设备姿态 / 重力倾角</div>
+  <button id="startBtn">开启传感器（iOS必须点我授权）</button>
+  <div class="item">Alpha(航向Z): <span class="val" id="alpha">--</span> °</div>
+  <div class="item">Beta(前后俯仰X): <span class="val" id="beta">--</span> °</div>
+  <div class="item">Gamma(左右横滚Y): <span class="val" id="gamma">--</span> °</div>
+  <hr style="margin:12px 0;border-color:#444">
+  <div class="item">重力加速度 X: <span class="val" id="gx">--</span></div>
+  <div class="item">重力加速度 Y: <span class="val" id="gy">--</span></div>
+  <div class="item">重力加速度 Z: <span class="val" id="gz">--</span></div>
+  <div id="tip"></div>
+</div>
+
+<script>
+const $ = s=>document.querySelector(s);
+const tip = $("#tip");
+let listening = false;
+
+// iOS 13+ 需要主动请求权限
+async function requestSensorPermission(){
+  if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+    try {
+      const state = await DeviceOrientationEvent.requestPermission();
+      if(state === 'granted'){
+        startListen();
+        tip.textContent="✅ 传感器授权成功";
+      }else{
+        tip.textContent="❌ 用户拒绝传感器权限";
+      }
+    }catch(e){
+      tip.textContent="❌ 授权异常:"+e.message;
+    }
+  }else{
+    // 安卓 / 旧浏览器直接开启
+    startListen();
+    tip.textContent="✅ 无需授权，已启动";
+  }
+}
+
+$("#startBtn").onclick = requestSensorPermission;
+
+function startListen(){
+  if(listening) return;
+  listening=true;
+
+  // 【设备方向】alpha/beta/gamma 倾角姿态
+  window.addEventListener('deviceorientation',(e)=>{
+    $("#alpha").textContent = e.alpha?.toFixed(2)??"null";
+    $("#beta").textContent  = e.beta?.toFixed(2)??"null";
+    $("#gamma").textContent = e.gamma?.toFixed(2)??"null";
+  });
+
+  // 【重力加速度】accelerationIncludingGravity 带重力的三轴加速度
+  window.addEventListener('devicemotion',(e)=>{
+    const g = e.accelerationIncludingGravity;
+    if(g){
+      $("#gx").textContent = g.x.toFixed(3);
+      $("#gy").textContent = g.y.toFixed(3);
+      $("#gz").textContent = g.z.toFixed(3);
+    }
+  });
+}
+</script>
+</body>
+</html>
