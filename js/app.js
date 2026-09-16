@@ -1053,6 +1053,33 @@ class Game {
   // ============================================
   requestFullscreen() {
     const el = document.documentElement;
+
+    // iOS Safari: Fullscreen API 不可用，通过隐藏地址栏实现近全屏
+    if (/iPhone|iPad|iPod/.test(navigator.userAgent) || 
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) {
+      // 1. 滚动 1px 隐藏 Safari 地址栏
+      window.scrollTo(0, 1);
+      // 2. 防止页面回弹显示地址栏
+      this._scrollFixHandler = () => {
+        if (window.scrollY !== 0 && window.scrollY !== 1) {
+          window.scrollTo(0, 1);
+        }
+      };
+      window.addEventListener('scroll', this._scrollFixHandler, { passive: true });
+      // 3. 横竖屏切换后重新隐藏地址栏
+      this._orientationFixHandler = () => {
+        setTimeout(() => window.scrollTo(0, 1), 300);
+      };
+      window.addEventListener('orientationchange', this._orientationFixHandler);
+      // 4. 尝试标准 Fullscreen API（部分 iOS PWA 模式支持）
+      try {
+        if (el.requestFullscreen) el.requestFullscreen();
+        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+      } catch (e) {}
+      return;
+    }
+
+    // 桌面浏览器：标准 Fullscreen API
     try {
       if (el.requestFullscreen) el.requestFullscreen();
       else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
@@ -1062,12 +1089,29 @@ class Game {
   }
 
   exitFullscreen() {
+    // 清理 iOS 滚动隐藏地址栏的监听
+    if (this._scrollFixHandler) {
+      window.removeEventListener('scroll', this._scrollFixHandler);
+      this._scrollFixHandler = null;
+    }
+    if (this._orientationFixHandler) {
+      window.removeEventListener('orientationchange', this._orientationFixHandler);
+      this._orientationFixHandler = null;
+    }
+
+    // 退出标准全屏
     try {
       if (document.exitFullscreen) document.exitFullscreen();
       else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
       else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
       else if (document.msExitFullscreen) document.msExitFullscreen();
     } catch (e) {}
+
+    // iOS: 回滚到顶部让地址栏恢复
+    if (/iPhone|iPad|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) {
+      window.scrollTo(0, 0);
+    }
   }
 
   // ============================================
